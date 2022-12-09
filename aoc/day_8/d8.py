@@ -14,54 +14,45 @@ def right(i, j) -> int:
     return i+1, j
 
 
-def get_score(i: int, j: int, trees: list[list[str]]) -> bool:
+def get_score_and_visibility(i: int, j: int, trees: list[list[str]]) -> tuple[bool, int]:
     score = 1
+    found_visibility = False
+
     for direction in [up, down, right, left]:
         i_idx, j_idx = i, j
+
         direction_score = 0
+
         while (0 < i_idx < len(trees)-1) and (0 < j_idx < len(trees[i_idx])-1):
             next_i, next_j = direction(i_idx, j_idx)
             direction_score += 1
+
             if trees[i][j] <= trees[next_i][next_j]:
                 break
+
             i_idx, j_idx = next_i, next_j
+
         score *= direction_score
+        if (
+            i_idx in {0, len(trees)-1}
+            or j_idx in {0, len(trees[i_idx])-1}
+        ):
+            found_visibility = True
+    return found_visibility, score
 
-    return score
 
+def get_top_score_and_visibility_count(trees: list[list[str]]) -> tuple[int, int]:
+    top_score = 0
+    visible_count = len(trees)*2 + (len(trees[0])-2)*2
 
-def get_best_score(trees: list[list[str]]) -> int:
-    best_score = 0
     for i in range(1, len(trees)-1):
         for j in range(1, len(trees[i])-1):
-            best_score = max(best_score, get_score(i, j, trees))
+            visible, score = get_score_and_visibility(i, j, trees)
+            if visible:
+                visible_count += 1
+            top_score = max(score, top_score)
 
-    return best_score
-
-
-def check_visibility(i: int, j: int, trees: list[list[str]]) -> bool:
-    for direction in [up, down, right, left]:
-        i_idx, j_idx = i, j
-        visible = True
-        while (0 < i_idx < len(trees)-1) and (0 < j_idx < len(trees[i_idx])-1):
-            next_i, next_j = direction(i_idx, j_idx)
-            if trees[i][j] <= trees[next_i][next_j]:
-                visible = False
-                break
-            i_idx, j_idx = next_i, next_j
-
-        if visible:
-            return True
-    return False
-
-
-def count_visible(trees: list[list[str]]) -> int:
-    visible = len(trees)*2 + (len(trees[0])-2)*2
-    for i in range(1, len(trees)-1):
-        for j in range(1, len(trees[i])-1):
-            if check_visibility(i, j, trees):
-                visible += 1
-    return visible
+    return visible_count, top_score
 
 
 def main() -> None:
@@ -70,12 +61,9 @@ def main() -> None:
         while line := file.readline().strip():
             trees.append(list(map(int, list(line))))
 
-    visible = count_visible(trees)
+    visible, top_score = get_top_score_and_visibility_count(trees)
     print(f"{visible=}")
-
-    best_score = get_best_score(trees)
-    print(f"{best_score=}")
-
+    print(f"{top_score=}")
 
 
 if __name__ == "__main__":
