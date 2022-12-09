@@ -84,8 +84,10 @@ def print_points(points: set[Point], seen_x: set[int], seen_y: set[int]) -> None
                 grid[len(grid)-y-1][x] = "#"
 
     grid[len(grid)-1+min_y][0-min_x] = "s"
-    for y, row in enumerate(grid, min_y):
-        print(f"{y:^3} - {''.join(row)}")
+    start_y = max_y
+    for row in grid:
+        print(f"{start_y:^3} - {''.join(row)}")
+        start_y -= 1
 
 
 def main() -> None:
