@@ -16,7 +16,7 @@ def up(p: Point) -> Point:
 
 def down(p: Point) -> Point:
     return Point(p.x, p.y-1)
-    
+
 def right(p: Point) -> Point:
     return Point(p.x+1, p.y)
 
@@ -33,36 +33,29 @@ DIRECTIONS = {
 
 def follow(head: Point, tail: Point) -> Point:
     if head == tail:
-        # print(f"CASE A")
         return tail
-    
+
     x_diff = tail.x - head.x
     y_diff = tail.y - head.y
 
-
     if abs(x_diff) <= 1 and abs(y_diff) <= 1:
         return tail
-
-    if head.x == tail.x:
-        # print(f"CASE B")
-        return Point(tail.x, head.y + ((tail.y - head.y)//2))
+    elif head.x == tail.x:
+        return Point(tail.x, head.y + ((y_diff)//2))
     elif head.y == tail.y:
-        # print(f"CASE C")
-        return Point((head.x + ((tail.x - head.x)//2)), tail.y)
+        return Point(head.x + ((x_diff)//2), tail.y)
     else:
-        # print(f"CASE D")
-
         return Point(
             head.x if abs(x_diff) == 1 else head.x + (x_diff//2),
             head.y if abs(y_diff) == 1 else head.y + (y_diff//2),
         )
 
 
-def move(moves: list[str, str], tail_length: int) -> tuple[set[Point], int, int]:
-    max_x = 0
-    max_y = 0
-
+def move(moves: list[str, str], tail_length: int) -> tuple[set[Point], set[int], set[int]]:
     seen = set()
+    seen_x = set()
+    seen_y = set()
+
     worm = [Point(0,0) for _ in range(tail_length+1)]
     for move in moves:
         direction = DIRECTIONS[move[0]]
@@ -74,23 +67,25 @@ def move(moves: list[str, str], tail_length: int) -> tuple[set[Point], int, int]
                 worm[idx] = follow(worm[idx-1], tail)
 
             seen.add(worm[-1])
+            seen_x.add(worm[-1].x)
+            seen_y.add(worm[-1].y)
 
-            max_x = max(max_x, worm[0].x)
-            max_y = max(max_y, worm[0].y)
-
-    return seen, max_x, max_y
+    return seen, seen_x, seen_y
 
 
-def print_points(points: set[Point], grid_size_x: int, grid_size_y: int) -> None:
-    """Doesnt work lol negative numbers throw it off"""
-    grid = [["." for _ in range(grid_size_x)] for _ in range(grid_size_y)]
-    for x in range(grid_size_x):
-        for y in range(grid_size_y):
-            if Point(x, y) in points:
+def print_points(points: set[Point], seen_x: set[int], seen_y: set[int]) -> None:
+    min_x, max_x = min(seen_x), max(seen_x)
+    min_y, max_y = min(seen_y), max(seen_y)
+
+    grid = [["." for _ in range(max_x - min_x)] for _ in range(max_y - min_y)]
+    for x in range(max_x - min_x):
+        for y in range(max_y - min_y):
+            if Point(x+min_x, y+min_y) in points:
                 grid[len(grid)-y-1][x] = "#"
 
-    for row in grid:
-        print(f"{''.join(row)}")
+    grid[len(grid)-1+min_y][0-min_x] = "s"
+    for y, row in enumerate(grid, min_y):
+        print(f"{y:^3} - {''.join(row)}")
 
 
 def main() -> None:
@@ -100,10 +95,11 @@ def main() -> None:
             moves.append(line)
 
     for tail_length in [1, 9]:
-        tail_seen, max_x, max_y = move(moves, tail_length)
+        tail_seen, seen_x, seen_y = move(moves, tail_length)
 
-        # print_points(tail_seen, max_x, max_y)
-        print(f"{len(tail_seen)}")
+        print_points(tail_seen, seen_x, seen_y)
+        print(f"SEEN = {len(tail_seen)}")
+        print("\n\n")
 
 
 if __name__ == "__main__":
