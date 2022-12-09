@@ -32,18 +32,11 @@ DIRECTIONS = {
 
 
 def follow(head: Point, tail: Point) -> Point:
-    if head == tail:
-        return tail
-
     x_diff = tail.x - head.x
     y_diff = tail.y - head.y
 
     if abs(x_diff) <= 1 and abs(y_diff) <= 1:
         return tail
-    elif head.x == tail.x:
-        return Point(tail.x, head.y + ((y_diff)//2))
-    elif head.y == tail.y:
-        return Point(head.x + ((x_diff)//2), tail.y)
     else:
         return Point(
             head.x if abs(x_diff) == 1 else head.x + (x_diff//2),
