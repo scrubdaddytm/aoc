@@ -1,11 +1,13 @@
 from aoc.cli import file_input
 from collections import deque
 from itertools import combinations
+from itertools import chain
 import re
 
 
-def shortest_path_len(source, target, graph) -> int:
+def shortest_path(source, target, graph) -> tuple[int, dict]:
     seen = set()
+    path = {}
     q = deque()
     q.append((source, 0))
 
@@ -13,95 +15,52 @@ def shortest_path_len(source, target, graph) -> int:
         v, d = q.popleft()
         seen.add(v)
         for n_v in graph[v][1]:
-            if n_v == target:
-                return d + 1
             if not n_v in seen:
+                path[n_v] = v
                 q.append((n_v, d + 1))
+            if n_v == target:
+                return d + 1, path
 
-    return len(graph.keys())
+    return len(graph.keys()), path
 
 
-def calculate_distance_matrix(graph):
+def calculate_distance_and_path_matrices(graph):
     distance_matrix = {s: {} for s in graph.keys()}
     for s in graph:
         for t in graph:
             if s == t:
                 continue
-            distance_matrix[s][t] = shortest_path_len(s, t, graph)
-        print(f"{s} -> {distance_matrix[s].items()}")
+            distance_matrix[s][t], path = shortest_path(s, t, graph)
     return distance_matrix
-        
 
-def traverse_with_elephant(source: str, graph: dict[str, tuple[int, list[str]]]) -> int:
-    # THIS IS WRONG :(
-    distance_matrix = calculate_distance_matrix(graph)
-    non_zero_valves = set()
-    for v, vals in graph.items():
-        if vals[0] > 0:
-            non_zero_valves.add(v)
-    open_valves = set()
 
-    def backtrack(me, me_wait, ele, ele_wait, flow, count):
-        if count >= 26 or open_valves == non_zero_valves:
-            return flow
-        print(f"round {count}: {me=}, waiting={me_wait} ~ {ele=}, waiting={ele_wait} - {flow}")
-        flows = []
-        if me_wait == 0 and ele_wait == 0:
-            if count > 0:
-                flow += ((26 - count) * graph[me][0]) + ((26 - count) * graph[ele][0])
-
-            for combo in combinations(non_zero_valves - open_valves, 2):
-                dist_me = distance_matrix[me][combo[0]]
-                dist_ele = distance_matrix[ele][combo[1]]
-                open_valves.add(combo[0])
-                open_valves.add(combo[1])
-                flows.append(backtrack(combo[0], dist_me, combo[1], dist_ele, flow, count+1))
-                open_valves.remove(combo[0])
-                open_valves.remove(combo[1])
-
-        elif me_wait == 0:
-            flow += (26 - count) * graph[me][0]
-            for next_me in (non_zero_valves - open_valves):
-                open_valves.add(next_me)
-                dist_me = distance_matrix[me][next_me]
-                flows.append(backtrack(next_me, dist_me, ele, ele_wait-1, flow, count+1))
-                open_valves.remove(next_me)
-
-        elif ele_wait == 0:
-            flow += (26 - count) * graph[ele][0]
-            for next_ele in (non_zero_valves - open_valves):
-                open_valves.add(next_ele)
-                dist_ele = distance_matrix[ele][next_ele]
-                flows.append(backtrack(me, me_wait-1, next_ele, dist_ele, flow, count+1))
-                open_valves.remove(next_ele)
-
-        else:
-            flows.append(backtrack(me, me_wait-1, ele, ele_wait-1, flow, count+1))
-
-        return max(flows) if flows else 0
-    return backtrack(source, 0, source, 0, 0, 0)
-
-def traverse(source: str, graph: dict[str, tuple[int, list[str]]]) -> int:
-    distance_matrix = calculate_distance_matrix(graph)
+def traverse(source: str, graph: dict[str, tuple[int, list[str]]], valves_to_open: set | None = None, rounds: int = 30) -> int:
+    distance_matrix = calculate_distance_and_path_matrices(graph)
 
     non_zero_valves = set()
-    for v, vals in graph.items():
-        if vals[0] > 0:
-            non_zero_valves.add(v)
+    if valves_to_open:
+        non_zero_valves = valves_to_open
+    else:
+        for v, vals in graph.items():
+            if vals[0] > 0:
+                non_zero_valves.add(v)
 
     open_valves = set()
 
     def backtrack(s, flow, count):
-        if count >= 30 or open_valves == non_zero_valves:
+        if count >= rounds or open_valves == non_zero_valves:
             return flow
         flows = []
-        for v in (non_zero_valves - open_valves):
-            open_valves.add(v)
+        for v in non_zero_valves - open_valves:
             dist = distance_matrix[s][v]
-            new_flow = (30 - (count+dist+1)) * graph[v][0]
-            flows.append(backtrack(v, flow+new_flow, count+dist+1))
+            if count + dist + 1 > rounds:
+                continue
+            open_valves.add(v)
+            new_flow = (rounds - (count + dist + 1)) * graph[v][0]
+            flows.append(backtrack(v, flow + new_flow, count + dist + 1))
             open_valves.remove(v)
-        return max(flows)
+        return max(flows) if flows else flow
+
     return backtrack(source, 0, 0)
 
 
@@ -111,13 +70,28 @@ def main() -> None:
         p = re.compile(r"Valve (\w+) has flow rate=(-?\d+); tunnels? leads? to valves? (.*)")
         while line := file.readline():
             result = p.match(line)
-            valves[result.group(1)] = (int(result.group(2)), result.group(3).split(', '))
+            valves[result.group(1)] = (int(result.group(2)), result.group(3).split(", "))
 
-    max_flow = traverse("AA",  valves)
+    max_flow = traverse("AA", valves)
     print(f"{max_flow}")
 
-    max_flow_with_elephant = traverse_with_elephant("AA", valves)
-    print(f"{max_flow_with_elephant}")
+    non_zero_valves = set()
+    for v, vals in valves.items():
+        if vals[0] > 0:
+            non_zero_valves.add(v)
+
+    max_flow_with_ele = 0
+    len_nonz = len(non_zero_valves)
+    for subset in chain.from_iterable(combinations(non_zero_valves, r) for r in range((len_nonz // 2) + 1, (len_nonz // 2) + 2)):
+        my_valves = set(subset)
+        ele_valves = non_zero_valves - my_valves
+        flow = traverse("AA", valves, my_valves, 26) + traverse("AA", valves, ele_valves, 26)
+        if flow > max_flow_with_ele:
+            print(f"checked: {my_valves} and {ele_valves}")
+            print(f"~~~ new max: {flow} ~~~~")
+            max_flow_with_ele = flow
+    print(f"{max_flow_with_ele=}")
+
 
 if __name__ == "__main__":
     main()
