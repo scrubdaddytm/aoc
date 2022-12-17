@@ -12,17 +12,17 @@ class Point:
         return Point(int(list_in[0]), int(list_in[1]))
 
 
-def up(p: Point) -> Point:
-    return Point(p.x, p.y+1)
+def up(p: Point, dist: int = 1) -> Point:
+    return Point(p.x, p.y+dist)
 
-def down(p: Point) -> Point:
-    return Point(p.x, p.y-1)
+def down(p: Point, dist: int = 1) -> Point:
+    return Point(p.x, p.y-dist)
 
-def left(p: Point) -> Point:
-    return Point(p.x-1, p.y)
+def left(p: Point, dist: int = 1) -> Point:
+    return Point(p.x-dist, p.y)
 
-def right(p: Point) -> Point:
-    return Point(p.x+1, p.y)
+def right(p: Point, dist: int = 1) -> Point:
+    return Point(p.x+dist, p.y)
 
 def down_left(p: Point) -> Point:
     return Point(p.x-1, p.y-1)
