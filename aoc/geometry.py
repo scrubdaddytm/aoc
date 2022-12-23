@@ -15,20 +15,26 @@ class Point:
 def up(p: Point, dist: int = 1) -> Point:
     return Point(p.x, p.y+dist)
 
+def up_right(p: Point) -> Point:
+    return Point(p.x+1, p.y+1)
+
+def up_left(p: Point) -> Point:
+    return Point(p.x-1, p.y+1)
+
 def down(p: Point, dist: int = 1) -> Point:
     return Point(p.x, p.y-dist)
-
-def left(p: Point, dist: int = 1) -> Point:
-    return Point(p.x-dist, p.y)
-
-def right(p: Point, dist: int = 1) -> Point:
-    return Point(p.x+dist, p.y)
 
 def down_left(p: Point) -> Point:
     return Point(p.x-1, p.y-1)
 
 def down_right(p: Point) -> Point:
     return Point(p.x+1, p.y-1)
+
+def left(p: Point, dist: int = 1) -> Point:
+    return Point(p.x-dist, p.y)
+
+def right(p: Point, dist: int = 1) -> Point:
+    return Point(p.x+dist, p.y)
 
 def distance(a: Point, b: Point) -> int:
     return abs(a.x - b.x) + abs(a.y - b.y)
