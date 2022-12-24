@@ -11,6 +11,9 @@ class Point:
     def from_list(list_in: list[str]) -> "Point":
         return Point(int(list_in[0]), int(list_in[1]))
 
+    def distance(self, b: "Point") -> int:
+        return abs(self.x - b.x) + abs(self.y - b.y)
+
 
 def up(p: Point, dist: int = 1) -> Point:
     return Point(p.x, p.y+dist)
