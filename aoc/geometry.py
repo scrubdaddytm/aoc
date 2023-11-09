@@ -48,14 +48,39 @@ def right(p: Point, dist: int = 1) -> Point:
     return Point(p.x + dist, p.y)
 
 
+def get_direction_callable(a: Point, b: Point) -> callable:
+    if a == b:
+        return lambda x: x
+    if a.x == b.x:
+        return up if a.y < b.y else down
+    if a.y == b.y:
+        return right if a.x < b.x else left
+    if a.x > b.x and a.y > b.y:
+        return down_left
+    if a.x > b.x and a.y < b.y:
+        return up_left
+    if a.y > b.y:
+        return down_right
+    return up_right
+
+
 def distance(a: Point, b: Point) -> int:
     return abs(a.x - b.x) + abs(a.y - b.y)
 
 
-def get_line(a: Point, b: Point) -> list[Point]:
+def get_line(a: Point, b: Point, support_45_deg=True) -> list[Point]:
     if a.x == b.x:
         return [Point(a.x, new_y) for new_y in range(min(a.y, b.y), max(a.y, b.y) + 1)]
     elif a.y == b.y:
         return [Point(new_x, a.y) for new_x in range(min(a.x, b.x), max(a.x, b.x) + 1)]
-    else:
-        return []  # this might be needed someday
+
+    if support_45_deg:
+        line = [a]
+        direction = get_direction_callable(a, b)
+        next_point = direction(a)
+        while next_point != b:
+            line.append(next_point)
+            next_point = direction(next_point)
+        line.append(b)
+        return line
+    return []
