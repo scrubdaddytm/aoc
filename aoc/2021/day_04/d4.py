@@ -27,6 +27,8 @@ class Cell:
         return str(self.value)
 
 class Board:
+    bingod = False
+
     def __init__(self, raw_board: list[list[int]]):
         self.cells_by_number = dict()
         self.rows = []
@@ -54,6 +56,9 @@ class Board:
         return uncalled_sum
 
     def bingo(self) -> bool:
+        if self.bingod:
+            return True
+
         for i in range(5):
             row_bingo = True
             col_bingo = True
@@ -63,6 +68,7 @@ class Board:
                 if not row_bingo and not col_bingo:
                     break
             if row_bingo or col_bingo:
+                self.bingod = True
                 return True
         return False
         # well i didn't read that diagonals dont count before I wrote this monstrosity...
@@ -73,16 +79,28 @@ class Board:
         # )
 
 
-def play_bingo(draws: list[int], boards: list[Board]) -> int:
+def play_bingo(draws: list[int], boards: list[Board]) -> (int, int):
+    first_winner = None
+    last_winner = None
+    winners = 0
     for draw in draws:
         for board in boards:
+            if board.bingod:
+                continue
             cell = board.cells_by_number.get(draw)
             if cell:
                 cell.called = True
             if board.bingo():
-                print(boards)
-                return draw * board.score()
-    return -1
+                winners += 1
+                if not first_winner:
+                    print(board)
+                    first_winner = draw * board.score()
+                elif winners == len(boards):
+                    print(board)
+                    last_winner = draw * board.score()
+        if winners == len(boards):
+            break
+    return first_winner, last_winner
 
 
 def main() -> None:
@@ -96,7 +114,8 @@ def main() -> None:
                 raw_board.append(map(int, file.readline().strip().split()))
             boards.append(Board(raw_board))
 
-    print(f"part 1: {play_bingo(draws, boards)}")
+    first_winner, last_winner = play_bingo(draws, boards)
+    print(f"part 1: {first_winner}\npart 2: {last_winner}")
 
 if __name__ == "__main__":
     main()
