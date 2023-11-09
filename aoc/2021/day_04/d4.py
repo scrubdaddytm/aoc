@@ -5,16 +5,16 @@ from enum import Enum
 
 
 class Color(str, Enum):
-   PURPLE = '\033[95m'
-   CYAN = '\033[96m'
-   DARKCYAN = '\033[36m'
-   BLUE = '\033[94m'
-   GREEN = '\033[92m'
-   YELLOW = '\033[93m'
-   RED = '\033[91m'
-   BOLD = '\033[1m'
-   UNDERLINE = '\033[4m'
-   END = '\033[0m'
+    PURPLE = "\033[95m"
+    CYAN = "\033[96m"
+    DARKCYAN = "\033[36m"
+    BLUE = "\033[94m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    END = "\033[0m"
 
 
 @dataclass
@@ -25,6 +25,7 @@ class Cell:
 
     def __repr__(self):
         return str(self.value)
+
 
 class Board:
     bingod = False
@@ -44,7 +45,12 @@ class Board:
         rep = ""
         for row in self.rows:
             rep += "\n"
-            rep += " ".join(map(lambda x: f"{Color.GREEN if x.called else ''}{str(x):>2}{Color.END if x.called else ''}", row))
+            rep += " ".join(
+                map(
+                    lambda x: f"{Color.GREEN if x.called else ''}{str(x):>2}{Color.END if x.called else ''}",
+                    row,
+                )
+            )
         return rep + "\n"
 
     def score(self) -> int:
@@ -70,12 +76,20 @@ class Board:
             if row_bingo or col_bingo:
                 self.bingod = True
                 return True
-        return False
-        # well i didn't read that diagonals dont count before I wrote this monstrosity...
+        # return False
+        # well i didnt read that diagonals dont count before I wrote this monstrosity...
         # return (
-        #     self.rows[0][0].called and self.rows[1][1].called and self.rows[2][2].called and self.rows[3][3].called and self.rows[4][4].called
-        #     ) or (
-        #     self.rows[0][4].called and self.rows[1][3].called and self.rows[2][2].called and self.rows[3][1].called and self.rows[4][0].called
+        #     self.rows[0][0].called
+        #     and self.rows[1][1].called
+        #     and self.rows[2][2].called
+        #     and self.rows[3][3].called
+        #     and self.rows[4][4].called
+        # ) or (
+        #     self.rows[0][4].called
+        #     and self.rows[1][3].called
+        #     and self.rows[2][2].called
+        #     and self.rows[3][1].called
+        #     and self.rows[4][0].called
         # )
 
 
@@ -108,7 +122,7 @@ def main() -> None:
     boards = []
     with file_input() as file:
         draws = list(map(int, file.readline().strip().split(",")))
-        while line := file.readline():
+        while _ := file.readline():
             raw_board = []
             for _ in range(5):
                 raw_board.append(map(int, file.readline().strip().split()))
@@ -116,6 +130,7 @@ def main() -> None:
 
     first_winner, last_winner = play_bingo(draws, boards)
     print(f"part 1: {first_winner}\npart 2: {last_winner}")
+
 
 if __name__ == "__main__":
     main()
