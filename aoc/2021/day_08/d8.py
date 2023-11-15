@@ -1,5 +1,4 @@
 from aoc.cli import file_input
-import pprint
 
 
 SIMPLE_NUMBER_SEGMENT_COUNTS = {
@@ -7,41 +6,6 @@ SIMPLE_NUMBER_SEGMENT_COUNTS = {
     4,
     3,
     7,
-}
-
-
-SEGMENT_COUNTS = {
-    2: (1,),
-    3: (7,),
-    4: (4,),
-    5: (2, 3, 5),
-    6: (0, 6, 9),
-    7: (8,),
-}
-
-
-DEFAULT_SEGMENTS = {
-    0: set(list("abcefg")),
-    1: set(list("cf")),
-    2: set(list("acdeg")),
-    3: set(list("acdfg")),
-    4: set(list("bcdf")),
-    5: set(list("abdfg")),
-    6: set(list("abdefg")),
-    7: set(list("acf")),
-    8: set(list("abcdefg")),
-    9: set(list("abcdfg")),
-}
-
-
-NUMS_USING_SEGMENT = {
-    "a": {0, 2, 3, 5, 6, 7, 8, 9},
-    "b": {0, 4, 5, 6, 8, 9},
-    "c": {0, 1, 2, 3, 4, 7, 8, 9},
-    "d": {2, 3, 4, 5, 6, 8, 9},
-    "e": {0, 2, 6, 8},
-    "f": {0, 1, 3, 4, 5, 6, 7, 8, 9},
-    "g": {0, 2, 3, 5, 6, 8, 9},
 }
 
 
@@ -62,7 +26,6 @@ def main() -> None:
 
     total = 0
     for patterns, outputs in lines:
-        # segment_map = {}
         patterns = [
             set(list(pattern)) for pattern in sorted(patterns, key=lambda x: len(x))
         ]
@@ -99,15 +62,6 @@ def main() -> None:
                 nine = sixer
             else:
                 zero = sixer
-
-        # well i didn't need to do any of this masking i guess lol
-        # segment_map["a"] = seven - one
-        # segment_map["b"] = five - three
-        # segment_map["c"] = one - five
-        # segment_map["d"] = eight - zero
-        # segment_map["e"] = two - three
-        # segment_map["f"] = three - two
-        # segment_map["g"] = eight - (seven | four | segment_map["a"] | segment_map["e"])
 
         translator = {
             "".join(sorted(zero)): 0,
