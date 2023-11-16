@@ -68,6 +68,12 @@ def distance(a: Point, b: Point) -> int:
     return abs(a.x - b.x) + abs(a.y - b.y)
 
 
+def in_bounds(
+    point: Point, max_x: int, max_y: int, min_x: int = 0, min_y: int = 0
+) -> bool:
+    return min_x <= point.x < max_x and min_y <= point.y < max_y
+
+
 def get_line(a: Point, b: Point, support_45_deg=True) -> list[Point]:
     if a.x == b.x:
         return [Point(a.x, new_y) for new_y in range(min(a.y, b.y), max(a.y, b.y) + 1)]
@@ -84,3 +90,11 @@ def get_line(a: Point, b: Point, support_45_deg=True) -> list[Point]:
         line.append(b)
         return line
     return []
+
+
+CARDINAL_DIRECTIONS = [
+    up,
+    down,
+    left,
+    right,
+]
