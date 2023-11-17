@@ -4,9 +4,9 @@ from collections import defaultdict
 
 def dfs(
     stack: list[str],
-    graph: dict[str, set[str]],
+    graph: dict[str, list[str]],
     smol_caves: set[str],
-    total_smol_caves: int,
+    doubled_up: str = "",
 ) -> int:
     if not stack:
         return 0
@@ -18,39 +18,52 @@ def dfs(
 
     paths = 0
 
+    old_double = doubled_up
     for edge in graph[vertex]:
-        # print(f"{vertex} -> {edge}")
-        if edge in smol_caves:
+        if edge == "start" or (edge in smol_caves and doubled_up != ""):
             continue
+        elif edge in smol_caves:
+            doubled_up = edge
         elif edge.islower():
             smol_caves.add(edge)
         stack.append(edge)
 
-        paths += dfs(stack, graph, smol_caves, total_smol_caves)
+        paths += dfs(stack, graph, smol_caves, doubled_up)
 
         stack.pop()
-        smol_caves.discard(edge)
+        if old_double == doubled_up:
+            smol_caves.discard(edge)
+        else:
+            doubled_up = old_double
 
     return paths
 
 
 def main() -> None:
-    graph = defaultdict(set)
+    graph = defaultdict(list)
     smol_caves = set()
     with file_input() as file:
         while line := file.readline().strip():
             vertices = line.split("-")
-            graph[vertices[0]].add(vertices[1])
-            graph[vertices[1]].add(vertices[0])
+            if vertices[1] not in graph[vertices[0]]:
+                graph[vertices[0]].append(vertices[1])
+            if vertices[0] not in graph[vertices[1]]:
+                graph[vertices[1]].append(vertices[0])
             for vertex in vertices:
                 if vertex.islower():
                     smol_caves.add(vertex)
 
+    for edge in graph.keys():
+        graph[edge] = sorted(graph[edge])
+
     print(f"{graph=}")
     print(f"{smol_caves=}")
 
-    paths = dfs(["start"], graph, {"start"}, len(smol_caves)-1)
-    print(f"part 1: {paths=}")
+    paths = dfs(["start"], graph, {"start"}, "start")
+    print(f"\npart 1: {paths=}\n")
+
+    paths = dfs(["start"], graph, {"start"})
+    print(f"\npart 2: {paths=}\n")
 
 
 if __name__ == "__main__":
