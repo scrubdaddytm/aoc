@@ -5,33 +5,44 @@ from collections import defaultdict
 
 def main() -> None:
     template = None
-    pair_insertion = dict()
+    rules = dict()
     with file_input() as file:
         template = file.readline().strip()
         file.readline()
         while line := file.readline().strip():
             pair, insertion = line.split(" -> ")
-            # pair_insertion[pair] = pair[0] + insertion + pair[1]
-            pair_insertion[pair] = insertion
+            rules[pair] = insertion
     print(f"{template=}")
-    print(f"{pair_insertion=}")
+    print(f"{rules=}")
 
-    for step in range(1, 11):
-        new_tmpl = str(template[0])
-        for pair in pairwise(template):
-            new_tmpl += pair_insertion["".join(pair)]
-            new_tmpl += pair[1]
-        template = new_tmpl
-        print(f"After step {step}: {template}")
+    score = defaultdict(int)
+    pair_count = defaultdict(int)
 
-    element_count = defaultdict(int)
-    for element in template:
-        element_count[element] += 1
-    count_list = [
-        (k, v) for k, v in sorted(element_count.items(), key=lambda item: item[1])
-    ]
-    print(f"most={count_list[-1]}, least={count_list[0]}")
-    print(f"part 1: {count_list[-1][1] - count_list[0][1]}")
+    for pair in pairwise(template):
+        pair_count[pair] += 1
+
+    for char in template:
+        score[char] += 1
+
+    for step in range(1, 41):
+        new_pair_count = defaultdict(int)
+        for (left, right), count in pair_count.items():
+            pair = left + right
+            inserted_char = rules[pair]
+
+            new_pair_count[pair] -= count
+            new_pair_count[left + inserted_char] += count
+            new_pair_count[inserted_char + right] += count
+
+            score[inserted_char] += count
+
+        for pair, count in new_pair_count.items():
+            pair_count[pair] += count
+
+        if step == 10:
+            print(f"part 1: {max(score.values()) - min(score.values())}")
+
+    print(f"part 2: {max(score.values()) - min(score.values())}")
 
 
 if __name__ == "__main__":
