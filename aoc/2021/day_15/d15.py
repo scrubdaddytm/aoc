@@ -18,11 +18,16 @@ def main() -> None:
     print(f"{tile_x=}, {tile_y=}, {p1_end=}, {end=}")
 
     point_graph = {}
+    distance = {}
+    prev = {}
+    pq = PriorityQueue(pq_removed_item=Point(-1, -1))
+    DEFAULT_DISTANCE = 999999999
 
-    for y in range(tile_y * 5):
-        for x in range(tile_x * 5):
+    for y in range(end.y + 1):
+        for x in range(end.x + 1):
             point = Point(x, y)
-            dist = 9999999999
+            dist = DEFAULT_DISTANCE
+
             if x < tile_x and y < tile_y:
                 dist = graph[y][x]
             else:
@@ -32,18 +37,10 @@ def main() -> None:
                     dist = point_graph[up] + 1
                 else:
                     dist = point_graph[left] + 1
-            if dist > 9:
-                dist = 1
+
+                dist = dist if dist <= 9 else 1
+
             point_graph[point] = dist
-
-    distance = {}
-    prev = {}
-    pq = PriorityQueue(pq_removed_item=Point(-1, -1))
-    DEFAULT_DISTANCE = 999999999
-
-    for y in range(end.y + 1):
-        for x in range(end.x + 1):
-            point = Point(x, y)
             distance[point] = DEFAULT_DISTANCE
             prev[point] = None
             pq.add(Point(x, y), DEFAULT_DISTANCE)
