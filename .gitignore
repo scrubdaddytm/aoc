@@ -2,3 +2,6 @@ __pycache__
 tmp
 *.tmp
 .DS_Store
+tags
+.activate.sh
+.deactivate.sh
