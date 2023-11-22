@@ -15,6 +15,28 @@ class Point:
     def distance(self, b: "Point") -> int:
         return abs(self.x - b.x) + abs(self.y - b.y)
 
+    def move(self, delta: "Point") -> "Point":
+        return Point(self.x + delta.x, self.y + delta.y)
+
+
+@dataclass(frozen=True, order=True)
+class Rectangle:
+    top_left: Point
+    bottom_right: Point
+
+    def __contains__(self, point: Point):
+        return (
+            self.top_left.x <= point.x <= self.bottom_right.x
+            and self.bottom_right.y <= point.y <= self.top_left.y
+        )
+
+    def all_points(self) -> set[Point]:
+        points = set()
+        for x in range(self.top_left.x, self.bottom_right.x):
+            for y in range(self.bottom_right.y, self.top_left.y):
+                points.add(Point(x, y))
+        return points
+
 
 def up(p: Point, dist: int = 1) -> Point:
     return Point(p.x, p.y + dist)
