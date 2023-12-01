@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from itertools import permutations, product
 
 
 @dataclass(frozen=True, order=True)
@@ -13,10 +14,51 @@ class Point:
         return Point(int(list_in[0]), int(list_in[1]))
 
     def distance(self, b: "Point") -> int:
+        """manhattan specifically"""
         return abs(self.x - b.x) + abs(self.y - b.y)
 
     def move(self, delta: "Point") -> "Point":
         return Point(self.x + delta.x, self.y + delta.y)
+
+
+@dataclass(frozen=True, order=True)
+class Point3D:
+    """Please forgive my ignorance as I work on this class 🥴"""
+
+    x: int
+    y: int
+    z: int
+
+    def __repr__(self) -> str:
+        return f"({self.x},{self.y},{self.z})"
+
+    def from_list(list_in: list[str]) -> "Point3D":
+        return Point3D(int(list_in[0]), int(list_in[1]), int(list_in[2]))
+
+    def move(self, vector: "Point3D") -> "Point3D":
+        return Point3D(self.x + vector.x, self.y + vector.y, self.z + vector.z)
+
+    def transform(self, octant_vector: "Point3D") -> "Point3D":
+        return Point3D(
+            self.x * octant_vector.x, self.y * octant_vector.y, self.z * octant_vector.z
+        )
+
+    def all_orientations(self) -> list["Point3D"]:
+        orientations = []
+        for x, y, z in permutations("xyz"):
+            permuted = Point3D(getattr(self, x), getattr(self, y), getattr(self, z))
+            for a, b, c in product([1, -1], repeat=3):
+                transformation = Point3D(a, b, c)
+                orientations.append(permuted.transform(transformation))
+        return orientations
+
+
+# TRANSFORMATIONS = [
+#     Point3D(1, 1, 1),
+#     Point3D(1, -1, -1),
+#     Point3D(-1, 1, -1),
+#     Point3D(-1, -1, 1),
+# ]
 
 
 @dataclass(frozen=True, order=True)
