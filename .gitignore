@@ -5,3 +5,4 @@ tmp
 tags
 .activate.sh
 .deactivate.sh
+*.in
