@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from itertools import permutations, product
+from typing import Optional
 
 
 @dataclass(frozen=True, order=True)
@@ -19,6 +20,79 @@ class Point:
 
     def move(self, delta: "Point") -> "Point":
         return Point(self.x + delta.x, self.y + delta.y)
+
+
+@dataclass(frozen=True, order=True)
+class LineSegment:
+    a: Point
+    b: Point
+
+    def __repr__(self) -> str:
+        return f"{self.a}->{self.b}"
+
+    def x_intersection(self, other: "LineSegment") -> Optional["LineSegment"]:
+        left = max(self.a.x, other.a.x)
+        right = min(self.b.x, other.b.x)
+        if left > right:
+            return None
+        return LineSegment(Point(left, self.a.y), Point(right, self.a.y))
+
+    def remove_x_segment(
+        self, other: "LineSegment", max_coord: int
+    ) -> list["LineSegment"]:
+        if self == other:
+            return []
+        elif self.a.x <= other.a.x and other.b.x <= self.b.x:  # CONTAINS
+            segments = []
+            if 0 <= other.a.x - 1 <= max_coord and self.a.x <= other.a.x - 1:
+                segments.append(LineSegment(self.a, Point(other.a.x - 1, other.a.y)))
+            if 0 <= other.a.x + 1 <= max_coord and other.b.x + 1 <= self.b.x:
+                segments.append(LineSegment(Point(other.b.x + 1, other.b.y), self.b))
+            return segments
+
+        elif self.b.x == other.a.x:  # INTERSECTS AT B', A"
+            if 0 <= self.a.x - 1 <= max_coord and self.a.x <= self.b.x - 1:
+                return [LineSegment(self.a, Point(self.b.x - 1, self.b.y))]
+            return []
+        elif self.a.x == other.b.x:  # INTERSECTS AT B", A'
+            if 0 <= self.a.x + 1 <= max_coord and self.a.x + 1 <= self.b.x:
+                return [LineSegment(Point(self.a.x + 1, self.a.y)), self.b]
+            return []
+        elif self.a.x < other.a.x:  # OVERLAPS AT A", B'
+            if 0 <= other.a.x - 1 <= max_coord and self.a.x <= other.a.x - 1:
+                return [LineSegment(self.a, Point(other.a.x - 1, other.a.y))]
+            return []
+        elif other.a.x > self.a.x:  # OVERLAPS AT
+            if 0 <= other.a.x + 1 <= max_coord and other.b.x + 1 <= self.b.x:
+                return [LineSegment(Point(other.b.x + 1, other.b.y), self.b)]
+        return [self]
+
+
+def subtract_line(
+    lines: list[LineSegment], operand: LineSegment, max_coord: int
+) -> list[LineSegment]:
+    new_lines = []
+    for line in lines:
+        intersection = line.x_intersection(operand)
+        if intersection == line:
+            continue
+        elif intersection:
+            new_lines.extend(line.remove_x_segment(intersection, max_coord))
+        else:
+            new_lines.append(line)
+
+    sanitized_lines = set()
+    if new_lines:
+        line = new_lines[0]
+        for idx in range(1, len(new_lines)):
+            if line.b == new_lines[idx].a:
+                line = LineSegment(line.a, new_lines[idx].b)
+                sanitized_lines.add(line)
+            else:
+                sanitized_lines.add(line)
+                line = new_lines[idx]
+        sanitized_lines.add(line)
+    return sorted(sanitized_lines)
 
 
 @dataclass(frozen=True, order=True)
