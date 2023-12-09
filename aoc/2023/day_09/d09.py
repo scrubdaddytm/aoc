@@ -1,5 +1,4 @@
 from aoc.cli import file_input
-from dataclasses import dataclass
 from itertools import pairwise
 
 
@@ -19,9 +18,7 @@ def main() -> None:
 
         print(f"ALL SEQ: {next_seqs}")
         next_seqs = list(reversed(next_seqs))
-        for idx in range(1, len(next_seqs)):
-            seq = next_seqs[idx - 1]
-            next_seq = next_seqs[idx]
+        for seq, next_seq in pairwise(next_seqs):
             print(f"ADDING {seq[-1]} + {next_seq[-1]}")
             next_seq.append(seq[-1] + next_seq[-1])
             next_seq.insert(0, next_seq[0] - seq[0])
