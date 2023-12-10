@@ -23,14 +23,15 @@ def print_grid(
     min_x: int | None = None,
     min_y: int | None = None,
     invert_y: bool = False,
+    default_str: str = ".",
 ):
-    if not max_x:
+    if max_x is None:
         max_x = max(points.keys(), key=lambda p: p.x).x
-    if not max_y:
+    if max_y is None:
         max_y = max(points.keys(), key=lambda p: p.y).y
-    if not min_x:
+    if min_x is None:
         min_x = min(points.keys(), key=lambda p: p.x).x
-    if not min_y:
+    if min_y is None:
         min_y = min(points.keys(), key=lambda p: p.y).y
     print(f"{min_x=},{min_y=} -> {max_x=},{max_y=}")
     print_str = []
@@ -41,7 +42,7 @@ def print_grid(
             if p in points:
                 row += points[p]
             else:
-                row += "."
+                row += default_str
         print_str.append(row)
     if invert_y:
         print_str = reversed(print_str)
@@ -57,4 +58,4 @@ def print_point_grid(
     invert_y: bool = False,
 ) -> None:
     points = {p: "#" for p in points}
-    print_grid(points, max_x, max_y, min_x, min_y)
+    print_grid(points, max_x, max_y, min_x, min_y, invert_y)

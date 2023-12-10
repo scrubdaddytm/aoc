@@ -13,7 +13,7 @@ class PriorityQueue:
 
     def add(self, item: Any, prio: int) -> None:
         if item in self.entry_finder:
-            self.remove_from_pq(item)
+            self.remove(item)
         entry = [prio, item]
         self.entry_finder[item] = entry
         heapq.heappush(self.pq, entry)
@@ -41,3 +41,10 @@ class PriorityQueue:
 
     def __bool__(self) -> bool:
         return not self.is_empty()
+
+    def items(self) -> list[Any]:
+        stuff = []
+        for item, entry in self.entry_finder.items():
+            if entry[-1] != self.pq_removed_item:
+                stuff.append(item)
+        return stuff
