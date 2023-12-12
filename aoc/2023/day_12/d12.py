@@ -1,14 +1,15 @@
 from aoc.cli import file_input
-from functools import cache
 
 
-@cache
 def backtrack(
     record: str,
     idx: int,
     placing: int,
     to_place: tuple[int],
+    cache: list[list[int]],
 ) -> int:
+    if cache[idx][placing] != -1:
+        return cache[idx][placing]
     value = to_place[placing]
     if (idx + value > len(record)) or any(c == "." for c in record[idx: idx + value]):
         return 0
@@ -28,7 +29,8 @@ def backtrack(
     combos = 0
     placing += 1
     while idx < len(record):
-        result = backtrack(record, idx, placing, to_place)
+        result = backtrack(record, idx, placing, to_place, cache)
+        cache[idx][placing] = result
         combos += result
         if record[idx] == "#":
             break
@@ -39,8 +41,9 @@ def backtrack(
 
 def start_backtracking(record: str, values: tuple[int]) -> set[str]:
     result = 0
+    cache = [[-1 for _ in range(len(values))] for _ in range(len(record))]
     for i in range(len(record)):
-        result += backtrack(record, i, 0, values)
+        result += backtrack(record, i, 0, values, cache)
         if record[i] == "#":
             break
     return result
