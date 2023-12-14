@@ -11,55 +11,47 @@ DIRECTIONS = {
 }
 
 
+def move_rock(graph: dict[Point, chr], rock_point: Point, direction: callable, bound_x: int, bound_y: int) -> None:
+    rock = graph.get(rock_point)
+    if rock != "O":
+        return
+    next_point = direction(rock_point)
+    prev_point = rock_point
+    while in_bounds(next_point, max_x=bound_x, max_y=bound_y) and not graph.get(next_point):
+        prev_point = next_point
+        next_point = direction(next_point)
+    if rock_point != prev_point:
+        graph.pop(rock_point)
+        graph[prev_point] = "O"
+
+
 def move(graph: dict[Point, chr], c_dir: str, bound_x: int, bound_y: int) -> None:
     direction = DIRECTIONS[c_dir]
 
     if c_dir in {"north", "south"}:
         start_y = end_y = step = 0
-        r_end_y = 0
         if c_dir == "north":
             end_y = bound_y
-            r_end_y = -1
             step = 1
         else:
             start_y = bound_y
-            r_end_y = start_y
             end_y = -1
             step = -1
         for y in range(start_y, end_y, step):
             for x in range(bound_x):
-                for y_dir in range(y, r_end_y, -step):
-                    rock_point = Point(x, y_dir)
-                    rock = graph.get(rock_point)
-                    if rock != "O":
-                        continue
-                    next_point = direction(rock_point)
-                    if in_bounds(next_point, max_x=bound_x, max_y=bound_y) and not graph.get(next_point):
-                        graph.pop(rock_point)
-                        graph[next_point] = "O"
+                move_rock(graph, Point(x, y), direction, bound_x, bound_y)
     else:
         start_x = end_x = step = 0
-        r_end_x = 0
-        if c_dir == "east":
+        if c_dir == "west":
             end_x = bound_x
-            r_end_x = -1
             step = 1
         else:
             start_x = bound_x
-            r_end_x = bound_x
             end_x = -1
             step = -1
         for x in range(start_x, end_x, step):
             for y in range(bound_y):
-                for x_dir in range(x, r_end_x, -step):
-                    rock_point = Point(x_dir, y)
-                    rock = graph.get(rock_point)
-                    if rock != "O":
-                        continue
-                    next_point = direction(rock_point)
-                    if in_bounds(next_point, max_x=bound_x, max_y=bound_y) and not graph.get(next_point):
-                        graph.pop(rock_point)
-                        graph[next_point] = "O"
+                move_rock(graph, Point(x, y), direction, bound_x, bound_y)
 
 
 def cycle(graph: dict[Point, chr], bound_x: int, bound_y: int) -> None:
@@ -81,6 +73,25 @@ def load(graph: dict[Point, chr], c_dir: str, bound_x: int, bound_y: int) -> int
     return load
 
 
+def hash_state(graph: dict[Point, chr]) -> str:
+    state = ""
+    for p, c in sorted(graph.items()):
+        state += str(p) + c + ";"
+    return state
+
+
+def state_to_graph(state: str) -> dict[Point, chr]:
+    items = state.split(";")
+    graph = {}
+    for item in items:
+        if not item:
+            continue
+        point, val = item.split(")")
+        point = Point(*list(map(int, point[1:].split(","))))
+        graph[point] = val
+    return graph
+
+
 def main() -> None:
     graph = {}
     y = 0
@@ -93,8 +104,6 @@ def main() -> None:
             y += 1
     x += 1
 
-    print_grid(graph)
-
     p1_copy_graph = graph.copy()
     move(p1_copy_graph, "north", x, y)
 
@@ -102,14 +111,14 @@ def main() -> None:
 
     seen_states = set()
     state_pos = {}
-    state = frozenset(graph.keys())
+    state = hash_state(graph)
 
     cycle_count = 0
     while state not in seen_states:
         seen_states.add(state)
         state_pos[state] = cycle_count
         cycle(graph, x, y)
-        state = frozenset(graph.items())
+        state = hash_state(graph)
         cycle_count += 1
 
     cycle_start_val = state_pos[state]
@@ -122,8 +131,8 @@ def main() -> None:
 
     for k, v in state_pos.items():
         if v == cycle_start_val + cycle_offset:
-            state_dict = {item[0]: item[1] for item in k}
-            print(f"Part 2: {load(state_dict, 'north', x, y)}")
+            final_graph = state_to_graph(k)
+            print(f"Part 2: {load(final_graph, 'north', x, y)}")
             break
 
 
