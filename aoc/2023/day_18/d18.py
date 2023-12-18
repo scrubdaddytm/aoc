@@ -21,39 +21,31 @@ def main() -> None:
         while instruction := file.readline().strip():
             instruction = instruction.split()
             instruction[1] = int(instruction[1])
-            instruction[2] = instruction[2][1:-1]
+            instruction[2] = instruction[2][2:-1]
             instructions.append(instruction)
 
-    a = Point(0, 0)
-    a_p2 = a
-    perimiter_area_p1 = 0
-    corners_p1 = [a]
-    perimiter_area_p2 = 0
-    corners_p2 = [a]
+    perimeter_area_p1 = 0
+    corners_p1 = [Point(0, 0)]
+    perimeter_area_p2 = 0
+    corners_p2 = [Point(0, 0)]
     for instruction in instructions:
-        direction = DIRECTIONS[instruction[0]](Point(0, 0))
-        direction = Point(direction.x * instruction[1], direction.y * instruction[1])
-        b = a.move(direction)
-        corners_p1.append(b)
-        perimiter_area_p1 += instruction[1]
-        a = b
+        for direction, length, corners, perimeter_area in [
+            (DIRECTIONS[instruction[0]](Point(0, 0)), instruction[1], corners_p1, perimeter_area_p1),
+            (DIRECTIONS[instruction[2][-1]](Point(0, 0)), int(instruction[2][:-1], 16), corners_p2, perimeter_area_p2),
+        ]:
+            direction = Point(direction.x * length, direction.y * length)
+            b = corners[-1].move(direction)
+            corners.append(b)
+            perimeter_area += length
 
-        p2_direction = DIRECTIONS[instruction[2][-1]](Point(0, 0))
-        length = int(instruction[2][1:-1], 16)
-        p2_direction = Point(p2_direction.x * length, p2_direction.y * length)
-        b_p2 = a_p2.move(p2_direction)
-        corners_p2.append(b_p2)
-        perimiter_area_p2 += length
-        a_p2 = b_p2
-
-    for p, item in enumerate(((corners_p1, perimiter_area_p1), (corners_p2, perimiter_area_p2))):
-        corners, perimiter_area = item
+    for p, item in enumerate(((corners_p1, perimeter_area_p1), (corners_p2, perimeter_area_p2))):
+        corners, perimeter_area = item
         area = 0
         for a, b in pairwise(reversed(corners)):
             area += determinant(a, b)
         area += determinant(corners[0], corners[-1])
         area //= 2
-        area += perimiter_area // 2 + 1
+        area += perimeter_area // 2 + 1
         print(f"Part {p}: {area}")
 
 
