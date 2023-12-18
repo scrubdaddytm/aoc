@@ -68,6 +68,10 @@ class LineSegment:
         return [self]
 
 
+def determinant(a: Point, b: Point) -> int:
+    return (a.x * b.y) - (b.x * a.y)
+
+
 def subtract_line(
     lines: list[LineSegment], operand: LineSegment, max_coord: int
 ) -> list[LineSegment]:
