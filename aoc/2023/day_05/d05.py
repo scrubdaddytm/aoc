@@ -1,5 +1,7 @@
-from aoc.cli import file_input
 from itertools import batched
+
+from aoc.cli import file_input
+from aoc.geometry import merge_lines, intersection, remove_intersection
 
 
 def get_next_val(next_val: int, mappings: list[tuple[int, int, int]]) -> int:
@@ -7,49 +9,6 @@ def get_next_val(next_val: int, mappings: list[tuple[int, int, int]]) -> int:
         if mapping[0] <= next_val < mapping[1]:
             return mapping[2] + next_val - mapping[0]
     return next_val
-
-
-def merge_lines(a: tuple[int, int], b: tuple[int, int]) -> list[tuple[int, int]]:
-    if not intersection(a, b):
-        return [a, b]
-    if a[0] < b[0]:
-        return [(a[0], b[1])]
-    return [(b[0], a[1])]
-
-
-def intersection(a: tuple[int, int], b: tuple[int, int]) -> tuple[int, int] | None:
-    left = max(a[0], b[0])
-    right = min(a[1], b[1])
-    return None if left > right else (left, right)
-
-
-def remove_intersection(
-    a: tuple[int, int], b: tuple[int, int]
-) -> list[tuple[int, int]]:
-    if a == b:
-        return []
-    elif not intersection(a, b):
-        return [a]
-    elif a[0] <= b[0] and b[1] <= a[1]:  # b within a
-        # print(f"B WITHIN A -> {a}, {b}")
-        segments = []
-        if a[0] <= b[0] - 1:
-            segments.append((a[0], b[0] - 1))
-        elif b[1] + 1 <= a[1]:
-            segments.append((b[1] + 1, a[1]))
-        return segments
-    elif a[1] == b[0]:
-        if a[0] <= a[1] - 1:
-            return [(a[0], a[1] - 1)]
-        return []
-    elif a[0] == b[1]:
-        if a[0] + 1 <= a[1]:
-            return [(a[0] + 1, a[1])]
-        return []
-    elif a[0] <= b[0]:  # a before b
-        return [(a[0], b[0] - 1)]
-    elif a[0] >= b[0]:  # b before a
-        return [(b[1] + 1, a[1])]
 
 
 def main() -> None:
