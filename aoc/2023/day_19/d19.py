@@ -1,9 +1,8 @@
 from dataclasses import dataclass, replace
 from collections import defaultdict
-from itertools import islice
 from operator import lt, gt
 from aoc.cli import file_input
-from aoc.geometry import merge_lines, intersection, remove_intersection, split_at_point
+from aoc.geometry import split_at_point
 
 
 @dataclass(frozen=True)
