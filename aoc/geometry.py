@@ -3,6 +3,57 @@ from itertools import permutations, product
 from typing import Optional
 
 
+""" 1 D """
+
+
+def merge_lines(a: tuple[int, int], b: tuple[int, int]) -> list[tuple[int, int]]:
+    if not intersection(a, b):
+        return [a, b]
+    if a[0] < b[0]:
+        return [(a[0], b[1])]
+    return [(b[0], a[1])]
+
+
+def intersection(a: tuple[int, int], b: tuple[int, int]) -> tuple[int, int] | None:
+    left = max(a[0], b[0])
+    right = min(a[1], b[1])
+    return None if left > right else (left, right)
+
+
+def remove_intersection(a: tuple[int, int], b: tuple[int, int]) -> list[tuple[int, int]]:
+    if a == b:
+        return []
+    elif not intersection(a, b):
+        return [a]
+    elif a[0] <= b[0] and b[1] <= a[1]:  # b within a
+        # print(f"B WITHIN A -> {a}, {b}")
+        segments = []
+        if a[0] <= b[0] - 1:
+            segments.append((a[0], b[0] - 1))
+        elif b[1] + 1 <= a[1]:
+            segments.append((b[1] + 1, a[1]))
+        return segments
+    elif a[1] == b[0]:
+        if a[0] <= a[1] - 1:
+            return [(a[0], a[1] - 1)]
+        return []
+    elif a[0] == b[1]:
+        if a[0] + 1 <= a[1]:
+            return [(a[0] + 1, a[1])]
+        return []
+    elif a[0] <= b[0]:  # a before b
+        return [(a[0], b[0] - 1)]
+    elif a[0] >= b[0]:  # b before a
+        return [(b[1] + 1, a[1])]
+
+
+def split_at_point(line: tuple[int, int], point: int) -> tuple[tuple[int, int], tuple[int, int]]:
+    return ((line[0], point-1), (point, line[1]))
+
+
+""" 2 D """
+
+
 @dataclass(frozen=True, order=True)
 class Point:
     x: int
@@ -37,9 +88,7 @@ class LineSegment:
             return None
         return LineSegment(Point(left, self.a.y), Point(right, self.a.y))
 
-    def remove_x_segment(
-        self, other: "LineSegment", max_coord: int
-    ) -> list["LineSegment"]:
+    def remove_x_segment(self, other: "LineSegment", max_coord: int) -> list["LineSegment"]:
         if self == other:
             return []
         elif self.a.x <= other.a.x and other.b.x <= self.b.x:  # CONTAINS
@@ -72,9 +121,7 @@ def determinant(a: Point, b: Point) -> int:
     return (a.x * b.y) - (b.x * a.y)
 
 
-def subtract_line(
-    lines: list[LineSegment], operand: LineSegment, max_coord: int
-) -> list[LineSegment]:
+def subtract_line(lines: list[LineSegment], operand: LineSegment, max_coord: int) -> list[LineSegment]:
     new_lines = []
     for line in lines:
         intersection = line.x_intersection(operand)
@@ -100,55 +147,12 @@ def subtract_line(
 
 
 @dataclass(frozen=True, order=True)
-class Point3D:
-    """Please forgive my ignorance as I work on this class 🥴"""
-
-    x: int
-    y: int
-    z: int
-
-    def __repr__(self) -> str:
-        return f"({self.x},{self.y},{self.z})"
-
-    def from_list(list_in: list[str]) -> "Point3D":
-        return Point3D(int(list_in[0]), int(list_in[1]), int(list_in[2]))
-
-    def move(self, vector: "Point3D") -> "Point3D":
-        return Point3D(self.x + vector.x, self.y + vector.y, self.z + vector.z)
-
-    def transform(self, octant_vector: "Point3D") -> "Point3D":
-        return Point3D(
-            self.x * octant_vector.x, self.y * octant_vector.y, self.z * octant_vector.z
-        )
-
-    def all_orientations(self) -> list["Point3D"]:
-        orientations = []
-        for x, y, z in permutations("xyz"):
-            permuted = Point3D(getattr(self, x), getattr(self, y), getattr(self, z))
-            for a, b, c in product([1, -1], repeat=3):
-                transformation = Point3D(a, b, c)
-                orientations.append(permuted.transform(transformation))
-        return orientations
-
-
-# TRANSFORMATIONS = [
-#     Point3D(1, 1, 1),
-#     Point3D(1, -1, -1),
-#     Point3D(-1, 1, -1),
-#     Point3D(-1, -1, 1),
-# ]
-
-
-@dataclass(frozen=True, order=True)
 class Rectangle:
     top_left: Point
     bottom_right: Point
 
     def __contains__(self, point: Point):
-        return (
-            self.top_left.x <= point.x <= self.bottom_right.x
-            and self.bottom_right.y <= point.y <= self.top_left.y
-        )
+        return self.top_left.x <= point.x <= self.bottom_right.x and self.bottom_right.y <= point.y <= self.top_left.y
 
     def all_points(self) -> set[Point]:
         points = set()
@@ -210,9 +214,7 @@ def distance(a: Point, b: Point) -> int:
     return abs(a.x - b.x) + abs(a.y - b.y)
 
 
-def in_bounds(
-    point: Point, max_x: int, max_y: int, min_x: int = 0, min_y: int = 0
-) -> bool:
+def in_bounds(point: Point, max_x: int, max_y: int, min_x: int = 0, min_y: int = 0) -> bool:
     return min_x <= point.x < max_x and min_y <= point.y < max_y
 
 
@@ -252,3 +254,36 @@ DIRECTIONS = [
     down_right,
     down_left,
 ]
+
+
+""" 3 D """
+
+
+@dataclass(frozen=True, order=True)
+class Point3D:
+    """Please forgive my ignorance as I work on this class 🥴"""
+
+    x: int
+    y: int
+    z: int
+
+    def __repr__(self) -> str:
+        return f"({self.x},{self.y},{self.z})"
+
+    def from_list(list_in: list[str]) -> "Point3D":
+        return Point3D(int(list_in[0]), int(list_in[1]), int(list_in[2]))
+
+    def move(self, vector: "Point3D") -> "Point3D":
+        return Point3D(self.x + vector.x, self.y + vector.y, self.z + vector.z)
+
+    def transform(self, octant_vector: "Point3D") -> "Point3D":
+        return Point3D(self.x * octant_vector.x, self.y * octant_vector.y, self.z * octant_vector.z)
+
+    def all_orientations(self) -> list["Point3D"]:
+        orientations = []
+        for x, y, z in permutations("xyz"):
+            permuted = Point3D(getattr(self, x), getattr(self, y), getattr(self, z))
+            for a, b, c in product([1, -1], repeat=3):
+                transformation = Point3D(a, b, c)
+                orientations.append(permuted.transform(transformation))
+        return orientations
