@@ -278,12 +278,3 @@ class Point3D:
 
     def transform(self, octant_vector: "Point3D") -> "Point3D":
         return Point3D(self.x * octant_vector.x, self.y * octant_vector.y, self.z * octant_vector.z)
-
-    def all_orientations(self) -> list["Point3D"]:
-        orientations = []
-        for x, y, z in permutations("xyz"):
-            permuted = Point3D(getattr(self, x), getattr(self, y), getattr(self, z))
-            for a, b, c in product([1, -1], repeat=3):
-                transformation = Point3D(a, b, c)
-                orientations.append(permuted.transform(transformation))
-        return orientations
