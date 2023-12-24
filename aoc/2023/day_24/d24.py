@@ -2,6 +2,7 @@ from itertools import combinations
 from aoc.cli import file_input
 from aoc.geometry import Point3D
 from aoc.print_tools import Color
+import numpy as np
 
 
 def determinant_2d(a: Point3D, b: Point3D) -> int:
@@ -22,11 +23,11 @@ def main() -> None:
 
     intersections = 0
     for (A, vA), (B, vB) in combinations(rays, 2):
-        print(f"Hailstone A: {A} @ {vA}")
-        print(f"Hailstone B: {B} @ {vB}")
+        # print(f"Hailstone A: {A} @ {vA}")
+        # print(f"Hailstone B: {B} @ {vB}")
         vector_determinant = determinant_2d(vA, vB)
         if vector_determinant == 0:
-            print(" --- " + Color.YELLOW + "Parallel!" + Color.END)
+            # print(" --- " + Color.YELLOW + "Parallel!" + Color.END)
             continue
 
         u = B.y - A.y
@@ -40,15 +41,53 @@ def main() -> None:
             cX = A.x + vA.x * u
             cY = A.y + vA.y * u
             if bound[0] <= cX <= bound[1] and bound[0] <= cY <= bound[1]:
-                print(" --- " + Color.GREEN + "Inside!" + Color.END + f" @ ({cX}, {cY})")
+                # print(" --- " + Color.GREEN + "Inside!" + Color.END + f" @ ({cX}, {cY})")
                 intersections += 1
-            else:
-                print(" --- " + Color.RED + "Outside!" + Color.END + f" @ ({cX}, {cY})")
-        else:
-            print(" --- " + Color.BLUE + "No Intersection!" + Color.END)
-        print()
+            # else:
+            #     print(" --- " + Color.RED + "Outside!" + Color.END + f" @ ({cX}, {cY})")
+        # else:
+            # print(" --- " + Color.BLUE + "No Intersection!" + Color.END)
+        # print()
 
     print(f"Part 1: {intersections}")
+
+    # Rock and rock velocity are our unknowns. Perform Gaussian elimination.
+    A, Av = rays[0]
+    A = np.array([A.x, A.y, A.z])
+    Av = np.array([Av.x, Av.y, Av.z])
+
+    B, Bv = rays[1]
+    B = np.array([B.x, B.y, B.z])
+    Bv = np.array([Bv.x, Bv.y, Bv.z])
+
+    C, Cv = rays[2]
+    C = np.array([C.x, C.y, C.z])
+    Cv = np.array([Cv.x, Cv.y, Cv.z])
+
+    l_rock = -np.cross(A, Av) + np.cross(B, Bv)
+    r_rock = -np.cross(A, Av) + np.cross(C, Cv)
+    rock = np.concatenate((l_rock, r_rock))
+
+    def xm(v):
+        return np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+
+    ul = xm(Av) - xm(Bv)
+    bl = xm(Av) - xm(Cv)
+    ur = xm(A) - xm(B)
+    br = xm(A) - xm(C)
+
+    m = []
+    for i in range(3):
+        m.append(np.concatenate((ul[i], ur[i])))
+    for i in range(3):
+        m.append(np.concatenate((bl[i], br[i])))
+    m = np.array(m)
+
+    print(f"{m=}")
+    print(f"{rock=}")
+    result = np.linalg.inv(m).dot(rock)
+    print(f"{result=}")
+    print(f"Part 2: {sum(result[:3])}")
 
 
 if __name__ == "__main__":
