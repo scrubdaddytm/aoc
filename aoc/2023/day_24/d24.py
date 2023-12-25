@@ -9,6 +9,10 @@ def determinant_2d(a: Point3D, b: Point3D) -> int:
     return (b.x * a.y) - (a.x * b.y)
 
 
+def cross_matrix(vector):
+    return np.array([[0, -vector[2], vector[1]], [vector[2], 0, -vector[0]], [-vector[1], vector[0], 0]])
+
+
 def main() -> None:
     rays = []
     with file_input() as file:
@@ -46,48 +50,48 @@ def main() -> None:
             # else:
             #     print(" --- " + Color.RED + "Outside!" + Color.END + f" @ ({cX}, {cY})")
         # else:
-            # print(" --- " + Color.BLUE + "No Intersection!" + Color.END)
+        # print(" --- " + Color.BLUE + "No Intersection!" + Color.END)
         # print()
 
     print(f"Part 1: {intersections}")
 
     # Rock and rock velocity are our unknowns. Perform Gaussian elimination.
-    A, Av = rays[0]
-    A = np.array([A.x, A.y, A.z])
-    Av = np.array([Av.x, Av.y, Av.z])
+    results = []
+    sums = []
+    for x in range(100):
+        three_rays = []
+        for P, V in rays[x:x+3]:
+            three_rays.append(np.array([P.x, P.y, P.z]))
+            three_rays.append(np.array([V.x, V.y, V.z]))
 
-    B, Bv = rays[1]
-    B = np.array([B.x, B.y, B.z])
-    Bv = np.array([Bv.x, Bv.y, Bv.z])
+        A, Av, B, Bv, C, Cv = three_rays
 
-    C, Cv = rays[2]
-    C = np.array([C.x, C.y, C.z])
-    Cv = np.array([Cv.x, Cv.y, Cv.z])
+        l_rock = -np.cross(A, Av) + np.cross(B, Bv)
+        r_rock = -np.cross(A, Av) + np.cross(C, Cv)
+        rock = np.concatenate((l_rock, r_rock))
 
-    l_rock = -np.cross(A, Av) + np.cross(B, Bv)
-    r_rock = -np.cross(A, Av) + np.cross(C, Cv)
-    rock = np.concatenate((l_rock, r_rock))
+        ul = cross_matrix(Av) - cross_matrix(Bv)
+        bl = cross_matrix(Av) - cross_matrix(Cv)
+        ur = cross_matrix(A) - cross_matrix(B)
+        br = cross_matrix(A) - cross_matrix(C)
 
-    def xm(v):
-        return np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+        m = []
+        for i in range(3):
+            m.append(np.concatenate((ul[i], ur[i])))
+        for i in range(3):
+            m.append(np.concatenate((bl[i], br[i])))
+        m = np.array(m)
 
-    ul = xm(Av) - xm(Bv)
-    bl = xm(Av) - xm(Cv)
-    ur = xm(A) - xm(B)
-    br = xm(A) - xm(C)
-
-    m = []
-    for i in range(3):
-        m.append(np.concatenate((ul[i], ur[i])))
-    for i in range(3):
-        m.append(np.concatenate((bl[i], br[i])))
-    m = np.array(m)
-
-    print(f"{m=}")
-    print(f"{rock=}")
-    result = np.linalg.inv(m).dot(rock)
-    print(f"{result=}")
-    print(f"Part 2: {sum(result[:3])}")
+        # print(f"{m=}")
+        # print(f"{rock=}")
+        result = np.linalg.inv(m).dot(rock)
+        # print(f"{result=}")
+        sums.append(sum(result[:3]))
+        results.append(result[:3])
+    sums = list(sorted(set(sums)))
+    for idx, result in enumerate(results):
+        if int(result[0]) == result[0] and int(result[1]) == result[1] and int(result[2]) == result[2]:
+            print(f"Part 2: {idx} -> {sum(result)} <- {result}")
 
 
 if __name__ == "__main__":
