@@ -29,6 +29,18 @@ class Block:
         self.id = -2
         self.type = "REMOVED"
 
+    def merge(self) -> None:
+        if self.type != "EMPTY":
+            return
+
+        if self.prev and self.prev == "EMPTY":
+            self.size += self.prev.size
+            self.prev.remove()
+
+        if self.next and self.next == "EMPTY":
+            self.size += self.next.size
+            self.next.remove()
+
     def __repr__(self) -> str:
         return f"{(self.name()) * self.size}"
 
@@ -71,7 +83,7 @@ def parse(disk_map: str) -> tuple[list[Block], list[int]]:
     return blocks, gross
 
 
-def defragment_compact(blocks: list[Block], debug_enabled: bool = False) -> int:
+def defragment_compact(blocks: list[int], debug_enabled: bool = False) -> int:
     start = 0
     end = len(blocks) - 1
     while blocks[start] != -1:
@@ -125,6 +137,7 @@ def defragment_whole_files(blocks: list[Block], debug_enabled: bool = False) -> 
 
         block.id = -1
         block.type = "EMPTY"
+        block.merge()
         if debug_enabled:
             start.print_seq()
 
@@ -143,11 +156,9 @@ def defragment_whole_files(blocks: list[Block], debug_enabled: bool = False) -> 
 def main() -> None:
     blocks = []
     gross = []
-    blocks_p2 = []
     with file_input() as file:
         while line := file.readline().strip():
             blocks, gross = parse(line)
-            blocks_p2, _ = parse(line)
 
     debug_enabled = False
 
