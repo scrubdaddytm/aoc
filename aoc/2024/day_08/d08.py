@@ -59,8 +59,6 @@ def main() -> None:
     antinodes_p2 = set()
     for c, points in node_lines.items():
         for a, b in combinations(points, 2):
-            a, b = sorted([a, b])
-
             a_delta = Point(-(b.x - a.x), -(b.y - a.y))
             anode_a = a.move(a_delta)
             antinodes_p1 |= find_anodes(anode_a, a_delta, in_b, limit=True)

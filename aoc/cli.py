@@ -1,7 +1,6 @@
+import argparse
 import pathlib
 import sys
-
-import argparse
 from contextlib import contextmanager
 
 
@@ -26,3 +25,12 @@ def file_input(*args, **kwds):
         input_file = pathlib.Path(input_file)
 
     yield input_file.open()
+
+
+def check_debug(*args, **kwds) -> bool:
+    parser = argparse.ArgumentParser()
+    debugging_input_group = parser.add_argument_group("debugging flags")
+    debugging_input_group.add_argument("-d", "--debug", action="store_true")
+    cli_args = parser.parse_args()
+
+    return cli_args.debug
