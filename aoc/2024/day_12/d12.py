@@ -22,7 +22,6 @@ def group_plots(plots: dict[Point, str]) -> dict[str, list[tuple[set[Point], int
         plot = set()
         plot.add(root_point)
         perimeter = 0
-        per_set = set()
 
         q = deque()
         q.append(root_point)
@@ -40,9 +39,8 @@ def group_plots(plots: dict[Point, str]) -> dict[str, list[tuple[set[Point], int
                         q.append(next_point)
                 else:
                     perimeter += 1
-                    per_set.add(next_point)
 
-        grouped_plots[c].append((plot, perimeter, per_set))
+        grouped_plots[c].append((plot, perimeter))
 
     return grouped_plots
 
@@ -77,7 +75,7 @@ def main() -> None:
     p1 = 0
     p2 = 0
     for c, regions in grouped_plots.items():
-        for plot, perimeter_size, perimeter in regions:
+        for plot, perimeter_size in regions:
             area = len(plot)
             sides = count_sides(plot)
             p1 += area * perimeter_size
