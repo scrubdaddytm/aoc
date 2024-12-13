@@ -2,7 +2,6 @@ from collections import defaultdict, deque
 
 from aoc.cli import file_input
 from aoc.geometry import CARDINAL_DIRECTIONS, Point
-from aoc.print_tools import print_grid
 
 
 def find_trails(

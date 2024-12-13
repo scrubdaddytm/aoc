@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from itertools import permutations, product
 from typing import Optional
 
-
 """ 1 D """
 
 
@@ -20,7 +19,9 @@ def intersection(a: tuple[int, int], b: tuple[int, int]) -> tuple[int, int] | No
     return None if left > right else (left, right)
 
 
-def remove_intersection(a: tuple[int, int], b: tuple[int, int]) -> list[tuple[int, int]]:
+def remove_intersection(
+    a: tuple[int, int], b: tuple[int, int]
+) -> list[tuple[int, int]]:
     if a == b:
         return []
     elif not intersection(a, b):
@@ -47,8 +48,10 @@ def remove_intersection(a: tuple[int, int], b: tuple[int, int]) -> list[tuple[in
         return [(b[1] + 1, a[1])]
 
 
-def split_at_point(line: tuple[int, int], point: int) -> tuple[tuple[int, int], tuple[int, int]]:
-    return ((line[0], point-1), (point, line[1]))
+def split_at_point(
+    line: tuple[int, int], point: int
+) -> tuple[tuple[int, int], tuple[int, int]]:
+    return ((line[0], point - 1), (point, line[1]))
 
 
 """ 2 D """
@@ -88,15 +91,19 @@ class LineSegment:
             return None
         return LineSegment(Point(left, self.a.y), Point(right, self.a.y))
 
-    def remove_x_segment(self, other: "LineSegment", max_coord: int) -> list["LineSegment"]:
+    def remove_x_segment(
+        self, other: "LineSegment", max_coord: int
+    ) -> list["LineSegment"]:
         if self == other:
             return []
         elif self.a.x <= other.a.x and other.b.x <= self.b.x:  # CONTAINS
             segments = []
             if 0 <= other.a.x - 1 <= max_coord and self.a.x <= other.a.x - 1:
-                segments.append(LineSegment(self.a, Point(other.a.x - 1, other.a.y)))
+                segments.append(LineSegment(
+                    self.a, Point(other.a.x - 1, other.a.y)))
             if 0 <= other.a.x + 1 <= max_coord and other.b.x + 1 <= self.b.x:
-                segments.append(LineSegment(Point(other.b.x + 1, other.b.y), self.b))
+                segments.append(LineSegment(
+                    Point(other.b.x + 1, other.b.y), self.b))
             return segments
 
         elif self.b.x == other.a.x:  # INTERSECTS AT B', A"
@@ -121,7 +128,9 @@ def determinant(a: Point, b: Point) -> int:
     return (a.x * b.y) - (b.x * a.y)
 
 
-def subtract_line(lines: list[LineSegment], operand: LineSegment, max_coord: int) -> list[LineSegment]:
+def subtract_line(
+    lines: list[LineSegment], operand: LineSegment, max_coord: int
+) -> list[LineSegment]:
     new_lines = []
     for line in lines:
         intersection = line.x_intersection(operand)
@@ -152,7 +161,10 @@ class Rectangle:
     bottom_right: Point
 
     def __contains__(self, point: Point):
-        return self.top_left.x <= point.x <= self.bottom_right.x and self.bottom_right.y <= point.y <= self.top_left.y
+        return (
+            self.top_left.x <= point.x <= self.bottom_right.x
+            and self.bottom_right.y <= point.y <= self.top_left.y
+        )
 
     def all_points(self) -> set[Point]:
         points = set()
@@ -214,7 +226,9 @@ def distance(a: Point, b: Point) -> int:
     return abs(a.x - b.x) + abs(a.y - b.y)
 
 
-def in_bounds(point: Point, max_x: int, max_y: int, min_x: int = 0, min_y: int = 0) -> bool:
+def in_bounds(
+    point: Point, max_x: int, max_y: int, min_x: int = 0, min_y: int = 0
+) -> bool:
     return min_x <= point.x < max_x and min_y <= point.y < max_y
 
 
@@ -238,21 +252,21 @@ def get_line(a: Point, b: Point, support_45_deg=True) -> list[Point]:
 
 CARDINAL_DIRECTIONS = [
     up,
+    right,
     down,
     left,
-    right,
 ]
 
 
 DIRECTIONS = [
     up,
-    down,
-    left,
-    right,
     up_right,
-    up_left,
+    right,
     down_right,
+    down,
     down_left,
+    left,
+    up_left,
 ]
 
 
@@ -277,4 +291,6 @@ class Point3D:
         return Point3D(self.x + vector.x, self.y + vector.y, self.z + vector.z)
 
     def transform(self, octant_vector: "Point3D") -> "Point3D":
-        return Point3D(self.x * octant_vector.x, self.y * octant_vector.y, self.z * octant_vector.z)
+        return Point3D(
+            self.x * octant_vector.x, self.y * octant_vector.y, self.z * octant_vector.z
+        )

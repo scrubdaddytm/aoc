@@ -1,4 +1,3 @@
-import time
 from collections import defaultdict, deque
 
 from aoc.cli import file_input
@@ -6,6 +5,7 @@ from aoc.geometry import CARDINAL_DIRECTIONS, Point
 from aoc.print_tools import make_grid
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.reactive import reactive
 from textual.widgets import Button, Header, Static
 
 
@@ -40,6 +40,11 @@ def find_trails(
                         q.append(next_cell)
 
     return access
+
+
+class Graph(Static):
+
+    graph = reactive({})
 
 
 class MyApp(App):
@@ -78,23 +83,19 @@ class MyApp(App):
                 if not self.topo_map:
                     self.load_data()
                 self.access = defaultdict(int)
-                p2_access = await self.distinct_trails(
+                self.distinct_trails(
                     self.topo_map,
                     self.ends,
                     self.access,
                 )
-                p2 = sum(p2_access[trailhead] for trailhead in self.trailheads)
-
-                grid = make_grid(self.access, min_x=0, min_y=0)
-                self.get_widget_by_id("p2_result").update(
-                    f"{grid}\nPart 2: {p2}")
 
     async def distinct_trails(
         self,
         topo_map: dict[Point, int],
         ends: set[Point],
         access: dict[Point, int],
-    ) -> dict[Point, int]:
+    ) -> None:
+        p2_result_widget = self.get_widget_by_id("p2_result")
         seen = set()
         q = deque()
         for end in ends:
@@ -109,8 +110,7 @@ class MyApp(App):
             p_val = topo_map[p]
 
             grid = make_grid(self.access, min_x=0, min_y=0)
-            self.get_widget_by_id("p2_result").update(grid)
-            self.refresh()
+            await p2_result_widget.update(grid)
 
             for d in CARDINAL_DIRECTIONS:
                 next_cell = d(p)
@@ -123,7 +123,10 @@ class MyApp(App):
                     if next_cell not in seen:
                         q.append(next_cell)
 
-        return access
+        p2 = sum(access[trailhead] for trailhead in self.trailheads)
+
+        grid = make_grid(self.access, min_x=0, min_y=0)
+        p2_result_widget.update(f"{grid}\nPart 2: {p2}")
 
     def load_data(self) -> None:
         self.topo_map = defaultdict(int)
