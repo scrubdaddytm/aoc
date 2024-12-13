@@ -1,32 +1,32 @@
 import re
 
 from aoc.cli import file_input
-from aoc.geometry import Point
+from aoc.geometry import Point, determinant
 
 
 def solve(prize: Point, a: Point, b: Point) -> int:
     """
     Cramer's rule
-    a.x * ap + b.x * bp = prize.x
-    a.y * ap + b.y * bp = prize.y
+    a.x * a_press + b.x * b_press = prize.x
+    a.y * a_press + b.y * b_press = prize.y
 
-    |a.x b.x||ap|   |prize.x|
-    |a.y b.y||bp| = |prize.y|
+    |a.x b.x||a_press|   |prize.x|
+    |a.y b.y||b_press| = |prize.y|
     """
-    determinant = a.x * b.y - b.x * a.y
+    a_b_det = determinant(a, b)
     if determinant == 0:
         return -1
 
-    a_numerator = prize.x * b.y - b.x * prize.y
-    b_numerator = a.x * prize.y - prize.x * a.y
+    prize_b_det = determinant(prize, b)
+    a_prize_det = determinant(a, prize)
 
-    if a_numerator % determinant != 0 or b_numerator % determinant != 0:
+    if prize_b_det % a_b_det != 0 or a_prize_det % a_b_det != 0:
         # We only want integer solutions.
         return -1
 
-    ap = a_numerator // determinant
-    bp = b_numerator // determinant
-    return ap * 3 + bp
+    a_press = prize_b_det // a_b_det
+    b_press = a_prize_det // a_b_det
+    return a_press * 3 + b_press
 
 
 def main() -> None:
@@ -42,20 +42,20 @@ def main() -> None:
             current_game = []
 
     p1 = 0
-    for game in games:
-        cost = solve(game[2], game[0], game[1])
-        if 0 < cost <= 400:
-            p1 += cost
-
     p2 = 0
-    for game in games:
-        cost = solve(
-            game[2].move(Point(10000000000000, 10000000000000)),
-            game[0],
-            game[1],
+    mover = Point(10000000000000, 10000000000000)
+    for a, b, prize in games:
+        p1_cost = solve(prize, a, b)
+        if 0 < p1_cost <= 400:
+            p1 += p1_cost
+
+        p2_cost = solve(
+            prize.move(mover),
+            a,
+            b,
         )
-        if cost != -1:
-            p2 += cost
+        if p2_cost != -1:
+            p2 += p2_cost
 
     print(f"Part 1: {p1}")
     print(f"Part 2: {p2}")
