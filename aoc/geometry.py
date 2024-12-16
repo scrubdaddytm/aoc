@@ -257,6 +257,18 @@ CARDINAL_DIRECTIONS = [
     left,
 ]
 
+CLOCKWISE = {
+    up: left,
+    right: up,
+    down: right,
+    left: down,
+}
+COUNTER_CLOCKWISE = {
+    up: right,
+    right: down,
+    down: left,
+    left: up,
+}
 
 DIRECTIONS = [
     up,
