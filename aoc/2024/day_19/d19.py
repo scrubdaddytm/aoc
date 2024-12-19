@@ -4,7 +4,7 @@ from aoc.cli import file_input
 
 
 @cache
-def find_combo(towels: tuple[str], target: str) -> bool:
+def find_combo(towels: tuple[str], target: str) -> int:
     if not target:
         return 1
 
@@ -17,17 +17,15 @@ def find_combo(towels: tuple[str], target: str) -> bool:
 
 
 def main() -> None:
-    towels = []
-    p1 = 0
-    p2 = 0
+    towels = None
+    p1 = p2 = 0
     with file_input() as file:
         while line := file.readline().strip():
-            towels = line.split(", ")
+            towels = tuple(line.split(", "))
         while line := file.readline().strip():
-            possibilities = find_combo(tuple(towels), line)
+            possibilities = find_combo(towels, line)
             p1 += 1 if possibilities else 0
             p2 += possibilities
-
     print(f"Part 1: {p1}")
     print(f"Part 2: {p2}")
 
