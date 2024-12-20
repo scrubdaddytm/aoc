@@ -1,5 +1,5 @@
 import sys
-from collections import defaultdict, deque
+from collections import defaultdict
 
 from aoc.cli import file_input
 from aoc.data_structures import PriorityQueue
@@ -9,7 +9,7 @@ from aoc.geometry import CARDINAL_DIRECTIONS, Point
 def solve_maze(
     end: Point,
     maze: set[Point],
-) -> tuple[list[Point], dict[Point, int]]:
+) -> tuple[dict[Point, Point], dict[Point, int]]:
     q = PriorityQueue(pq_removed_item=Point(-1, -1))
     dist = {}
     prev = {}
@@ -38,10 +38,8 @@ def find_cheat_points(p: Point, maze: set[Point], time: int = 2) -> set[Point]:
         for dx in range(-time, time + 1):
             if (dx == 0 and dy == 0) or abs(dx) + abs(dy) > time:
                 continue
-            cheat_p = Point(p.x + dx, p.y + dy)
-            if cheat_p in maze:
-                cheat_points.add(cheat_p)
-    return cheat_points
+            cheat_points.add(Point(p.x + dx, p.y + dy))
+    return cheat_points & maze
 
 
 def cheat(
