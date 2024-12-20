@@ -53,17 +53,11 @@ def cheat(
     cheat_time: int = 2,
 ) -> dict[int, int]:
     saved = defaultdict(int)
-    cheats_found = set()
     no_cheat_dist = dist[start]
     p = start
     while p != end:
         curr_dist = no_cheat_dist - dist[p]
         for cheat_p in find_cheat_points(p, maze, cheat_time):
-            cheat_key = (p, cheat_p)
-            if cheat_key in cheats_found:
-                continue
-            cheats_found.add(cheat_key)
-
             cheat_dist = curr_dist + p.distance(cheat_p) + dist[cheat_p]
             if no_cheat_dist - cheat_dist > 0:
                 saved[no_cheat_dist - cheat_dist] += 1
