@@ -34,19 +34,13 @@ def solve_maze(
 
 def find_cheat_points(p: Point, maze: set[Point], time: int = 2) -> set[Point]:
     cheat_points = set()
-
-    seen = set()
-    q = deque()
-    q.append(p)
-    while q:
-        curr_p = q.popleft()
-        for d in CARDINAL_DIRECTIONS:
-            next_p = d(curr_p)
-            if next_p not in seen and p.distance(next_p) <= time:
-                q.append(next_p)
-                seen.add(next_p)
-                if next_p in maze:
-                    cheat_points.add(next_p)
+    for dy in range(-time, time + 1):
+        for dx in range(-time, time + 1):
+            if (dx == 0 and dy == 0) or abs(dx) + abs(dy) > time:
+                continue
+            cheat_p = Point(p.x + dx, p.y + dy)
+            if cheat_p in maze:
+                cheat_points.add(cheat_p)
     return cheat_points
 
 
@@ -66,7 +60,7 @@ def cheat(
         curr_dist = no_cheat_dist - dist[p]
         for cheat_p in find_cheat_points(p, maze, cheat_time):
             cheat_key = (p, cheat_p)
-            if (p, cheat_p) in cheats_found:
+            if cheat_key in cheats_found:
                 continue
             cheats_found.add(cheat_key)
 
