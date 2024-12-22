@@ -75,6 +75,12 @@ class Point:
     def move(self, delta: "Point") -> "Point":
         return Point(self.x + delta.x, self.y + delta.y)
 
+    def __add__(self, b: "Point") -> "Point":
+        return self.move(b)
+
+    def __sub__(self, b: "Point") -> "Point":
+        return Point(self.x - b.x, self.y - b.y)
+
 
 @dataclass(frozen=True, order=True)
 class LineSegment:
