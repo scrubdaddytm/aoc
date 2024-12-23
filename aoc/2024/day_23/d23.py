@@ -21,21 +21,18 @@ def main() -> None:
                 three_sets.add(frozenset([comp, a, b]))
 
     for s in three_sets:
-        for comp in s:
-            if comp[0] == "t":
-                p1 += 1
-                break
+        if any(comp[0] == "t" for comp in s):
+            p1 += 1
 
     deeper = three_sets
     while len(deeper) > 1:
         onemore = set()
-        for t in deeper:
-            comps = list(t)
-            for maybe_connected in network[comps[0]]:
-                if maybe_connected in t:
-                    continue
+        for comps in deeper:
+            for maybe_connected in filter(
+                lambda m: m not in comps, network[list(comps)[0]]
+            ):
                 if all([maybe_connected in network[c] for c in comps]):
-                    onemore.add(frozenset(comps + [maybe_connected]))
+                    onemore.add(frozenset(comps | set([maybe_connected])))
         deeper = onemore
     biggest = list(deeper)[0]
 
