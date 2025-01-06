@@ -22,7 +22,7 @@ def main() -> None:
     path_base = pathlib.Path(__file__).parent.resolve()
 
     template_path = path_base / "day_template.py"
-    day_path = path_base / cli_args.year / f"{day_str}"
+    day_path = path_base / f"y_{cli_args.year}" / f"{day_str}"
     sample_path = day_path / "sample.in"
     input_path = day_path / f"{day_str_short}.in"
     solution_path = day_path / f"{day_str_short}.py"
