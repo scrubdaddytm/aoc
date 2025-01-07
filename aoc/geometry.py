@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from itertools import permutations, product
 from typing import Optional
 
 """ 1 D """
@@ -82,13 +81,62 @@ class Point:
         return Point(self.x - b.x, self.y - b.y)
 
 
+ORIGIN = Point(0, 0)
+
+
 @dataclass(frozen=True, order=True)
 class LineSegment:
     a: Point
     b: Point
 
+    @property
+    def length(self) -> int:
+        return self.a.distance(self.b)
+
     def __repr__(self) -> str:
         return f"{self.a}->{self.b}"
+
+    def is_parallel(self, other: "LineSegment") -> bool:
+        determinant_denom = ((self.a.x - self.b.x) * (other.a.y - other.b.y)) - (
+            (self.a.y - self.b.y) * (other.a.x - other.b.x)
+        )
+        return determinant_denom == 0
+
+    def contains_point(self, p: Point) -> bool:
+        x1, x2 = sorted((self.a.x, self.b.x))
+        y1, y2 = sorted((self.a.y, self.b.y))
+        return x1 <= p.x <= x2 and y1 <= p.y <= y2
+
+    def point_intersection(self, other: "LineSegment") -> Point | None:
+        p1 = self.a
+        x1, y1 = p1.x, p1.y
+        p2 = self.b
+        x2, y2 = p2.x, p2.y
+        p3 = other.a
+        x3, y3 = p3.x, p3.y
+        p4 = other.b
+        x4, y4 = p4.x, p4.y
+
+        denominator = determinant(
+            Point(x1 - x2, y1 - y2),
+            Point(x3 - x4, y3 - y4),
+        )
+        if denominator == 0:
+            return None
+
+        d1 = determinant(p1, p2)
+        d2 = determinant(p3, p4)
+        x_numerator = determinant(Point(d1, x1 - x2), Point(d2, x3 - x4))
+        y_numerator = determinant(Point(d1, y1 - y2), Point(d2, y3 - y4))
+
+        intersection = Point(
+            x_numerator // denominator,
+            y_numerator // denominator,
+        )
+
+        if self.contains_point(intersection) and other.contains_point(intersection):
+            return intersection
+        return None
 
     def x_intersection(self, other: "LineSegment") -> Optional["LineSegment"]:
         left = max(self.a.x, other.a.x)
