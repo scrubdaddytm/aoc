@@ -1,7 +1,48 @@
 import heapq
 import math
+from dataclasses import dataclass
 
 from aoc.cli import file_input
+
+
+@dataclass
+class SetEntry[T]:
+    parent: T
+    size: int
+
+
+class DisjointSet:
+    """Followed the Union-Find wiki"""
+
+    forest = None
+
+    def __init__(self):
+        self.forest = {}
+
+    def find(self, item):
+        if item not in self.forest:
+            self.forest[item] = SetEntry(item, 1)
+
+        while self.forest[item].parent != item:
+            self.forest[item].parent = self.forest[self.forest[item].parent].parent
+            item = self.forest[item].parent
+        return item
+
+    def size(self, item):
+        return self.forest[self.find(item)].size
+
+    def union(self, a, b):
+        a = self.find(a)
+        b = self.find(b)
+
+        if a == b:
+            return
+
+        if self.forest[a].size < self.forest[b].size:
+            a, b = b, a
+
+        self.forest[b].parent = a
+        self.forest[a].size = self.forest[a].size + self.forest[b].size
 
 
 def distance(a, b) -> int:
@@ -38,37 +79,21 @@ def main() -> None:
             d = distance(boxes[i], boxes[j])
             heapq.heappush(heap, [d, boxes[i], boxes[j]])
 
-    circuits = {}
     i = 0
+    dj = DisjointSet()
     while len(heap) > 0:
         d, a, b = heapq.heappop(heap)
 
-        ab_c = None
-        if a in circuits and b in circuits:
-            a_c = circuits[a]
-            b_c = circuits[b]
-            ab_c = set(a_c) | set(b_c)
-        elif a in circuits:
-            ab_c = set(circuits[a])
-        elif b in circuits:
-            ab_c = set(circuits[b])
-        else:
-            ab_c = set()
-
-        ab_c.add(a)
-        ab_c.add(b)
-        if len(ab_c) == len(boxes):
+        dj.union(a, b)
+        if dj.size(a) == len(boxes) or dj.size(b) == len(boxes):
             p2 = a[0] * b[0]
             break
-        ab_c = frozenset(ab_c)
-        for box in ab_c:
-            circuits[box] = ab_c
 
         i += 1
         if i == 1000:
-            top_3 = sorted(set(circuits.values()), key=lambda x: -len(x))[:3]
+            top_3 = sorted(dj.forest.values(), key=lambda x: -x.size)[:3]
             for top in top_3:
-                p1 *= len(top)
+                p1 *= top.size
 
     print(f"Part 1: {p1}")
     print(f"Part 2: {p2}")
