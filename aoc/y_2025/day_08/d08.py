@@ -34,39 +34,12 @@ def main() -> None:
 
     heap = []
     for i in range(len(boxes)):
-        for j in range(i, len(boxes)):
-            if i != j:
-                d = distance(boxes[i], boxes[j])
-                heapq.heappush(heap, [d, boxes[i], boxes[j]])
+        for j in range(i + 1, len(boxes)):
+            d = distance(boxes[i], boxes[j])
+            heapq.heappush(heap, [d, boxes[i], boxes[j]])
 
     circuits = {}
-    for i in range(1000):
-        d, a, b = heapq.heappop(heap)
-
-        ab_c = None
-        if a in circuits and b in circuits:
-            a_c = circuits[a]
-            b_c = circuits[b]
-            ab_c = set(a_c) | set(b_c)
-        elif a in circuits:
-            ab_c = set(circuits[a])
-        elif b in circuits:
-            ab_c = set(circuits[b])
-        else:
-            ab_c = set()
-
-        ab_c.add(a)
-        ab_c.add(b)
-        ab_c = frozenset(ab_c)
-        for box in ab_c:
-            circuits[box] = ab_c
-
-    top_3 = sorted(set(circuits.values()), key=lambda x: -len(x))[:3]
-    for top in top_3:
-        p1 *= len(top)
-
-    a = None
-    b = None
+    i = 0
     while len(heap) > 0:
         d, a, b = heapq.heappop(heap)
 
@@ -85,12 +58,17 @@ def main() -> None:
         ab_c.add(a)
         ab_c.add(b)
         if len(ab_c) == len(boxes):
+            p2 = a[0] * b[0]
             break
         ab_c = frozenset(ab_c)
         for box in ab_c:
             circuits[box] = ab_c
 
-    p2 = a[0] * b[0]
+        i += 1
+        if i == 1000:
+            top_3 = sorted(set(circuits.values()), key=lambda x: -len(x))[:3]
+            for top in top_3:
+                p1 *= len(top)
 
     print(f"Part 1: {p1}")
     print(f"Part 2: {p2}")
