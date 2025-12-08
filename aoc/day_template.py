@@ -1,5 +1,4 @@
 from aoc.cli import file_input
-from dataclasses import dataclass
 
 
 def main() -> None:
