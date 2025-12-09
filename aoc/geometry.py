@@ -93,6 +93,22 @@ class LineSegment:
     def length(self) -> int:
         return self.a.distance(self.b)
 
+    def all_points(self) -> set[Point]:
+        dx, dy = 0, 0
+        if self.a.x != self.b.x:
+            dx = -1 if self.a.x > self.b.x else 1
+        else:
+            dy = -1 if self.a.y > self.b.y else 1
+        dxy = Point(dx, dy)
+
+        points = set()
+        points.add(self.a)
+        points.add(self.b)
+        a = self.a
+        while (a := a.move(dxy)) != self.b:
+            points.add(a)
+        return points
+
     def __repr__(self) -> str:
         return f"{self.a}->{self.b}"
 
@@ -226,6 +242,41 @@ class Rectangle:
             for y in range(self.bottom_right.y, self.top_left.y):
                 points.add(Point(x, y))
         return points
+
+
+@dataclass(frozen=True, order=True)
+class RectangleV2:
+    a: Point
+    b: Point
+
+    def __contains__(self, point: Point):
+        x_min, x_max = min(self.a.x, self.b.x), max(self.a.x, self.b.x)
+        y_min, y_max = min(self.a.y, self.b.y), max(self.a.y, self.b.y)
+        return x_min < point.x < x_max and y_min < point.y < y_max
+
+    def is_on(self, point: Point) -> bool:
+        x_min, x_max = min(self.a.x, self.b.x), max(self.a.x, self.b.x)
+        y_min, y_max = min(self.a.y, self.b.y), max(self.a.y, self.b.y)
+        return (
+            (point.x == x_min or point.x == x_max) and y_min <= point.y <= y_max
+        ) or ((point.y == y_min or point.y == y_max) and x_min <= point.x <= x_max)
+
+    def area(self) -> int:
+        return (1 + abs(self.a.x - self.b.x)) * (1 + abs(self.a.y - self.b.y))
+
+    def lines(self) -> list["LineSegment"]:
+        x_min, x_max = min(self.a.x, self.b.x), max(self.a.x, self.b.x)
+        y_min, y_max = min(self.a.y, self.b.y), max(self.a.y, self.b.y)
+        top_left = Point(x_min, y_max)
+        top_right = Point(x_max, y_max)
+        bottom_right = Point(x_max, y_min)
+        bottom_left = Point(x_min, y_min)
+        return [
+            LineSegment(top_left, top_right),
+            LineSegment(top_right, bottom_right),
+            LineSegment(bottom_right, bottom_left),
+            LineSegment(bottom_left, top_left),
+        ]
 
 
 def up(p: Point, dist: int = 1) -> Point:
