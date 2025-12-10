@@ -1,4 +1,5 @@
-numpy==2.2.0
-ipython==8.30.0
+numpy==2.3.5
+ipython==9.8.0
 ipdb==0.13.13
-textual==0.89.1
+textual==6.8.0
+z3-solver==4.15.4.0
