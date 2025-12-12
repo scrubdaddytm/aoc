@@ -71,5 +71,7 @@ def print_point_grid(
     min_y: int | None = None,
     invert_y: bool = False,
 ) -> None:
+    if not points:
+        return
     points = {p: "#" for p in points}
     print_grid(points, max_x, max_y, min_x, min_y, invert_y)
